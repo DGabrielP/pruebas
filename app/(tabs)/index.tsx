@@ -1,74 +1,90 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import Header from "@/components/Header";
+import InputTemplate from "@/components/InputTemplate";
+import ButtonTemplate from "@/components/ButtonTemplate";
+import TypoText from "@/components/ui/TypoText";
+import Colors from "@/components/ui/ColorsFont";
+import { router } from "expo-router";
+import { loginUser } from "@/services/login";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const LoginScreen = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-export default function HomeScreen() {
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert("Error", "Por favor ingresa usuario y contraseña");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await loginUser({ username, password });
+      await AsyncStorage.setItem("authToken", response.token);
+      
+      Alert.alert("Éxito", "Inicio de sesión exitoso");
+      router.push("./petchoice"); 
+    } catch (error) {
+      Alert.alert("Error", "Credenciales incorrectas");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Header title="Acceso de Usuario" />
+
+      <InputTemplate 
+        placeholder="Usuario" 
+        iconName="user" 
+        value={username}
+        onChangeText={setUsername}
+      />
+      <InputTemplate 
+        placeholder="Contraseña" 
+        iconName="lock" 
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+
+      <ButtonTemplate 
+        title={loading ? "Cargando..." : "INGRESAR"} 
+        onPress={handleLogin} 
+      />
+
+      <TouchableOpacity onPress={() => router.push('/register')}> 
+        <Text style={[TypoText.link, styles.centerText]}>Registrate</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.forgotPassword}>
+        ¿Olvidaste la contraseña? <Text style={TypoText.link}>Recuperar</Text>
+      </Text>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  centerText: {
+    marginVertical: 10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  forgotPassword: {
+    marginTop: 15,
+    fontSize: 14,
+    color: Colors.textPrimary,
   },
 });
+
+export default LoginScreen;
