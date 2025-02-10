@@ -1,87 +1,50 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert} from "react-native";
+import React from "react";
+import { View, StyleSheet, FlatList } from "react-native";
 import Header from "@/components/Header";
-import InputTemplate from "@/components/InputTemplate";
-import ButtonTemplate from "@/components/ButtonTemplate";
-import TypoText from "@/components/ui/TypoText";
+import PetItem from "@/components/PetItem";
+import RectangleButton from "@/components/RectangleButton";
 import Colors from "@/components/ui/ColorsFont";
-import {registerUser} from "@/services/register"
+import { router } from "expo-router";
 
-const ChoiceScreen = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordConfirm, setPasswordConfirm] = useState('');
-    const [email, setEmail] = useState('');
-    const [inputColor, setInputColor] = useState(Colors.inputBackground);
+const pets = [
+  { id: 1, name: "Helly", owner: "Jonathan Cadme", breed: "Golden Retriever", isFavorite: false },
+  { id: 2, name: "Tommy", owner: "Diego Pulgarn", breed: "Pequinés", isFavorite: true },
+  { id: 3, name: "Samantha", owner: "Leonardo Uluma", breed: "Husky Siberiano", isFavorite: false },
+  { id: 4, name: "Pulgosa", owner: "José Jaramillo", breed: "Pastor Alemán", isFavorite: true },
+  { id: 5, name: "Giyu", owner: "Michelle Maquina", breed: "Border Collie", isFavorite: false },
+];
 
-    const handlePasswordConfirmChange = (text: string) => {
-        setPasswordConfirm(text);
-        setInputColor(text === password ? Colors.inputsuccess : Colors.inputfail);
-    };
+const PetScreen = () => {
+  return (
+    <View style={styles.container}>
+      <View style={styles.buttons}>
+      <RectangleButton 
+         title="Agregar" 
+         subtitle="Nueva Mascota" 
+         onPress={() => router.push('/petregister')}
+        />
+      </View>
 
-    const handleRegister = async () => {
-        if (!username || !password || !email) {
-            Alert.alert("Error", "Todos los campos son obligatorios.");
-            return;
-        }
+      <Header title="Lista de Mascotas" />
 
-        if (password !== passwordConfirm) {
-            Alert.alert("Error", "Las contraseñas no coinciden.");
-            return;
-        }
-
-        try {
-            const response = await registerUser({ username, password, email });
-            Alert.alert("Éxito", "Usuario registrado correctamente.");
-            console.log("Registro exitoso:", response);
-        } catch (error) {
-            Alert.alert("Error", "No se pudo registrar el usuario.");
-        }
-    };
-
-
-
-    return (
-        <View style={styles.container}>
-            <Header title="Registro de usuario" />
-
-            <InputTemplate placeholder="Usuario" iconName="user"  onChangeText={setUsername}/>
-            <InputTemplate 
-                placeholder="Contraseña" 
-                iconName="lock" 
-                secureTextEntry 
-                onChangeText={setPassword} 
-            />
-            <InputTemplate 
-                placeholder="Repita la Contraseña" 
-                iconName="lock" 
-                secureTextEntry 
-                onChangeText={handlePasswordConfirmChange}
-                inputColor={inputColor} 
-            />
-            <InputTemplate placeholder="Email" iconName="mail" onChangeText={setEmail}/>
-
-            <ButtonTemplate title="Registrar" onPress={handleRegister}/>
-        </View>
-    );
+      <FlatList
+        data={pets}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => <PetItem {...item} />}
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Colors.background,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: 20,
-    },
-    centerText: {
-        marginVertical: 10,
-    },
-    forgotPassword: {
-        marginTop: 15,
-        fontSize: 14,
-        color: Colors.textPrimary,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    paddingHorizontal: 10,
+  },
+  buttons: {
+    marginVertical: 10,
+  },
 });
 
-export default ChoiceScreen;
+export default PetScreen;
